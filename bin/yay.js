@@ -10,10 +10,27 @@ var PORT = 6666;
 var IRC_SERVER = 'irc.freenode.net';
 var CHANNELS = ['#test-for'];
 
+var Users = [];
 
-var command = {
-  collect: collectMessages,
-  remind: remindMeInEmail
+
+function updateUser(username, command) {
+  cosole.dir(Users);
+  Users.forEach(function(ele) {
+    if (ele.name == username){
+      ele.status = command;
+      return;
+    }
+  });
+  var user = {
+    name: username,
+    status: command
+  };
+  Users.push(user);
+}
+
+var Command = {
+  collect: false,
+  remind: false
 }
 
 var collectMessages = function(count) {
@@ -46,8 +63,8 @@ var options = {
 }
 
 var server = email.server.connect({
-  user: 'yaybot9527',
-  password: 'iamajerk',
+  user: '***',
+  password: '***',
   host: 'smtp.gmail.com',
   ssl: true
 });
@@ -71,14 +88,15 @@ var excute = jerk(function(j){
   });
   j.watch_for(NICK_NAME, function(message){
     console.dir(message);
-   // console.dir(message.text[0]);
+    parseCommand(message);
     message.say(message.text[0]);
   })
 }).connect(options);
 
 function parseCommand(msg) {
-  var command = msg.replce(NICK_NAME+':', '');
+  var command = msg.text[0].replce(NICK_NAME+':', '');
   if (command == 'collect') {
-    command.collect(3);
+    Command.collect = true;
   }
+  updateUser(msg.user, Command);
 }
