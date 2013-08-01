@@ -1,4 +1,7 @@
 yaybot
 ======
 
-IRC bot of assistant if you are not able to check your irc message record or reply messages
+IRC bot of assistant when you are not online
+
+1. Could receive msg.
+2. bot could send msg on behalf of the user.
