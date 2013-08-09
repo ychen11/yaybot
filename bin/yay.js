@@ -69,9 +69,9 @@ var server = email.server.connect({
   ssl: true
 });
 
-var sendout = function send() {
+var sendout = function send(msgBody) {
   server.send({
-    text: 'I hope this works',
+    text: msgBody,
     from: 'yaybot9527@gmail.com',
     to: 'chenyiwei1987@gmail.com',
     subject: 'test emailjs'
@@ -83,13 +83,14 @@ var sendout = function send() {
 var excute = jerk(function(j){
   j.watch_for('soup', function(message){
     console.log("aaa");
-    sendout();
+    sendout('test');
     message.say(": I am a jerk, totally, shame on me!");
   });
   j.watch_for(NICK_NAME, function(message){
     console.dir(message);
     parseCommand(message);
     message.say(message.text[0]);
+    sendout('test');
   })
 }).connect(options);
 
