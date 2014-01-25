@@ -1,57 +1,26 @@
 var jerk = require('jerk');
-var email = require('emailjs')
+var email = require('emailjs');
+var ghApi = require('github');
+var async = require('async');
+var _ = require('underscore');
+var log = require('logmagic').local('yaybot.yay');
+var sprintf = require('sprintf').sprintf;
+var cronJob = require('cron').CronJob;
+
+var PRClient = require('./myprclient').PRClient;
 
 /*
  * IRC account info
  *
  */
-var NICK_NAME = 'Iamajerk9527';
+var NICK_NAME = 'PR_bot';
 var PORT = 6666;
 var IRC_SERVER = 'irc.freenode.net';
 var CHANNELS = ['#test-for'];
 
-var Users = [];
-
-
-function updateUser(username, command) {
-  cosole.dir(Users);
-  Users.forEach(function(ele) {
-    if (ele.name == username){
-      ele.status = command;
-      return;
-    }
-  });
-  var user = {
-    name: username,
-    status: command
-  };
-  Users.push(user);
-}
-
-var Command = {
-  collect: false,
-  remind: false
-}
-
-var collectMessages = function(count) {
-  jerk(function(j) {
-    j.watch_for(NICK_NAME, function(msg){
-      console.dir(msg);
-      console.log("this is from collectMessages");
-      if (msg.text.length != count) {
-        msg.say('Tell me how many messages you want me to collect for you!');
-      }else{
-        for (var i = 0; i < count; i++) {
-          msg.say(msg.text[i]);
-        }
-      }
-    })
-  }).connect(options);
-}
-
-var remindMeInEmail = function(count) {
-
-}
+var USERS = [
+  'ychen11'
+];
 
 
 var options = {
@@ -59,45 +28,77 @@ var options = {
   port: PORT,
   nick : NICK_NAME,
   channels: CHANNELS
- // channels: ['#ele-dev roosevelt']
 }
 
-var server = email.server.connect({
-  user: '***',
-  password: '***',
-  host: 'smtp.gmail.com',
-  ssl: true
-});
 
-var sendout = function send(msgBody) {
-  server.send({
-    text: msgBody,
-    from: 'yaybot9527@gmail.com',
-    to: 'chenyiwei1987@gmail.com',
-    subject: 'test emailjs'
-  }, function(err, msg){
-    console.log(err || msg)
-  });
-}
+/**
+ * getPRsInfo get PRs info make a msg and send it to devs.
+ */
+function getPRsInfo(callback) {
+  var prClient = new PRClient(),
+      repoName = 'racker/ele',
+      prInfo = [];
 
-var excute = jerk(function(j){
-  j.watch_for('soup', function(message){
-    console.log("aaa");
-    sendout('test');
-    message.say(": I am a jerk, totally, shame on me!");
-  });
-  j.watch_for(NICK_NAME, function(message){
-    console.dir(message);
-    parseCommand(message);
-    message.say(message.text[0]);
-    sendout('test');
+  async.series([
+    function init(callback) {
+      prClient.init(function(err) {
+        callback(err);
+      });
+    },
+
+    function getPRs(callback) {
+      prClient.setRepo(repoName);
+      prClient.queryPRs(function(err, res) {
+        if (err) {
+          callback(err);
+          return;
+        }
+        prInfo = _.last(res, 5).reverse();
+        callback(null);
+      });
+    }, 
+
+    function compseMsg(callback) {
+      var msg = 'Hey, there are oldest 5 PRs need to be reviewed today\n';
+
+      _.each(prInfo, function(item) {
+        msg += sprintf('PR url: %s\n', item.html_url);
+      });
+      callback(null, msg);
+    }
+  ], function(err, res) {
+    if (err) {
+      console.dir(err);
+    }
+    console.dir('All prs got queried');
+    callback(err, res[2]);
   })
+}
+
+/**
+ * excute connect the bot to irc channel
+ */
+var excute = jerk(function(j){
+  j.watch_for('Hello, PR_bot', function(message){
+    message.say("Hey, what can I do for you, my lord?");
+  });
 }).connect(options);
 
-function parseCommand(msg) {
-  var command = msg.text[0].replce(NICK_NAME+':', '');
-  if (command == 'collect') {
-    Command.collect = true;
-  }
-  updateUser(msg.user, Command);
-}
+
+/**
+ * job the cron job for bot
+ */
+var job = new cronJob({
+  cronTime: '00 31 16 * * 1-5', 
+  onTick: function() {
+    getPRsInfo(function(err, msg) {
+      excute.say(CHANNELS[0], USERS.toString() + ' ' + msg); 
+    });
+  },  
+  start: false,
+  timeZone: "America/Los_Angeles"
+});
+
+/** start the cron job above */
+job.start();
+
