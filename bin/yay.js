@@ -16,7 +16,7 @@ var PRClient = require('./myprclient').PRClient;
 var NICK_NAME = 'PR_bot';
 var PORT = 6666;
 var IRC_SERVER = 'irc.freenode.net';
-var CHANNELS = ['#test-for'];
+var CHANNELS = ['#test-yiwei'];
 
 var USERS = [
   'ychen11'
@@ -81,6 +81,9 @@ function getPRsInfo(callback) {
 var excute = jerk(function(j){
   j.watch_for('Hello, PR_bot', function(message){
     message.say("Hey, what can I do for you, my lord?");
+  });
+  j.watch_for('r|Rf|Fr|R', function(message) {
+    message.say(USERS.toString() + ' ^ ');
   });
 }).connect(options);
 
