@@ -13,7 +13,7 @@ var PRClient = require('./myprclient').PRClient;
  * IRC account info
  *
  */
-var NICK_NAME = 'PR_bot';
+var NICK_NAME = 'yay_bot';
 var PORT = 6666;
 var IRC_SERVER = 'irc.freenode.net';
 var CHANNELS = ['#test-yiwei'];
@@ -62,7 +62,7 @@ function getPRsInfo(callback) {
       var msg = 'Hey, there are oldest 5 PRs need to be reviewed today\n';
 
       _.each(prInfo, function(item) {
-        msg += sprintf('PR url: %s\n', item.html_url);
+        msg += sprintf('%s, ', item.html_url);
       });
       callback(null, msg);
     }
@@ -92,7 +92,7 @@ var excute = jerk(function(j){
  * job the cron job for bot
  */
 var job = new cronJob({
-  cronTime: '00 31 16 * * 1-5', 
+  cronTime: '00 17 00 * * 1-5', 
   onTick: function() {
     getPRsInfo(function(err, msg) {
       excute.say(CHANNELS[0], USERS.toString() + ' ' + msg); 
