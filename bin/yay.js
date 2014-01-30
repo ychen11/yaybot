@@ -59,9 +59,14 @@ function getPRsInfo(callback) {
     }, 
 
     function compseMsg(callback) {
-      var msg = 'Hey, there are oldest 5 PRs need to be reviewed today\n';
+      var msg = 'Hey, there are 6 PRs need to be reviewed today\n';
 
-      _.each(prInfo, function(item) {
+      msg += 'Oldest 3: \n';
+      _.each(prInfoLast, function(item) {
+        msg += sprintf('%s, ', item.html_url);
+      });
+      msg += 'Latest 3: \n';
+      _.each(prInfoFirst, function(item) {
         msg += sprintf('%s, ', item.html_url);
       });
       callback(null, msg);
