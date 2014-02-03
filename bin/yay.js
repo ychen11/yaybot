@@ -8,6 +8,7 @@ var sprintf = require('sprintf').sprintf;
 var cronJob = require('cron').CronJob;
 
 var PRClient = require('./myprclient').PRClient;
+var settings = require('./settings').settings;
 
 /*
  * IRC account info
@@ -24,10 +25,10 @@ var USERS = [
 
 
 var options = {
-  server : IRC_SERVER,
-  port: PORT,
-  nick : NICK_NAME,
-  channels: CHANNELS
+  server : settings.IRC_SERVER,
+  port: settings.PORT,
+  nick : settings.NICK_NAME,
+  channels: settings.CHANNELS
 }
 
 
@@ -88,7 +89,7 @@ var excute = jerk(function(j){
     message.say("Hey, what can I do for you, my lord?");
   });
   j.watch_for('r|Rf|Fr|R', function(message) {
-    message.say(USERS.toString() + ' ^ ');
+    message.say(settings.USERS.toString() + ' ^ ');
   });
 }).connect(options);
 
@@ -100,7 +101,7 @@ var job = new cronJob({
   cronTime: '00 17 00 * * 1-5', 
   onTick: function() {
     getPRsInfo(function(err, msg) {
-      excute.say(CHANNELS[0], USERS.toString() + ' ' + msg); 
+      excute.say(CHANNELS[0], settings.USERS.toString() + ' ' + msg); 
     });
   },  
   start: false,
