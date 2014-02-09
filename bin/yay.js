@@ -88,7 +88,7 @@ var excute = jerk(function(j){
   j.watch_for('Hello, PR_bot', function(message){
     message.say("Hey, what can I do for you, my lord?");
   });
-  j.watch_for(/rfr|RFR/, function(message) {
+  j.watch_for(/(r|R)(f|F)(r|R)/, function(message) {
     message.say(settings.USERS.toString() + ' ^ ');
   });
 }).connect(options);
